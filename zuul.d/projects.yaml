@@ -1,613 +1,363 @@
 - project-template:
+    check:
+      jobs: [contrail-vnc-build-unittest-ubuntu-trusty]
+    gate:
+      jobs: [noop]
+      queue: contrail-vnc
     name: unittests
-    check:
-      jobs:
-        - contrail-vnc-build-unittest-ubuntu-trusty
-    gate:
-      queue: contrail-vnc
-      jobs:
-        - noop
-
 - project-template:
+    check:
+      jobs: [contrail-vnc-unittest-webui]
     name: unittests-webui
+- project-template:
     check:
       jobs:
-        - contrail-vnc-unittest-webui
-
-- project-template:
+      - contrail-vnc-build-package-centos74
+      - contrail-build-containers-centos7-ocata:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-build-test-containers:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-build-containers-centos7-ocata:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-build-containers-centos7-queens:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-build-containers-centos7-rocky:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-sanity-centos7-kolla-ocata:
+          dependencies: [contrail-build-test-containers, contrail-build-containers-centos7-ocata]
+      - contrail-sanity-centos7-kolla-queens:
+          dependencies: [contrail-build-test-containers, contrail-build-containers-centos7-queens]
+      - contrail-sanity-centos7-kolla-rocky:
+          dependencies: [contrail-build-test-containers, contrail-build-containers-centos7-rocky]
+      - contrail-sanity-centos7-k8s:
+          dependencies: [contrail-build-test-containers, contrail-build-containers-centos7-queens]
+    experimental-sanity:
+      jobs:
+      - contrail-sanity-centos7-kolla-ocata:
+          vars: {contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port
+              }}', contrail_version: '{{ packaging.version.public }}-latest', setup_docker_registry: false}
+      - contrail-sanity-centos7-kolla-queens:
+          vars: {contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port
+              }}', contrail_version: '{{ packaging.version.public }}-latest', setup_docker_registry: false}
+      - contrail-sanity-centos7-kolla-queens-multinode:
+          vars: {contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port
+              }}', contrail_version: '{{ packaging.version.public }}-latest', setup_docker_registry: false}
+      - contrail-sanity-centos7-k8s:
+          vars: {contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port
+              }}', contrail_version: '{{ packaging.version.public }}-latest', setup_docker_registry: false}
+    gate:
+      jobs: [contrail-vnc-build-package-centos74]
+      queue: contrail-vnc
     name: systests
+- project-template:
     check:
       jobs:
-        - contrail-vnc-build-package-centos74
-        - contrail-build-containers-centos7-ocata:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-build-test-containers:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-build-containers-centos7-ocata:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-build-containers-centos7-queens:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-build-containers-centos7-rocky:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-sanity-centos7-kolla-ocata:
-            dependencies:
-              - contrail-build-test-containers
-              - contrail-build-containers-centos7-ocata
-        - contrail-sanity-centos7-kolla-queens:
-            dependencies:
-              - contrail-build-test-containers
-              - contrail-build-containers-centos7-queens
-        - contrail-sanity-centos7-kolla-rocky:
-            dependencies:
-              - contrail-build-test-containers
-              - contrail-build-containers-centos7-rocky
-        - contrail-sanity-centos7-k8s:
-            dependencies:
-              - contrail-build-test-containers
-              - contrail-build-containers-centos7-queens
-
-    gate:
-      queue: contrail-vnc
-      jobs:
-        - contrail-vnc-build-package-centos74
+      - contrail-vnc-build-package-centos74
+      - contrail-build-containers-centos7-ocata:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-build-test-containers:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-sanity-ubuntu1604-helm-ocata:
+          dependencies: [contrail-build-containers-centos7-ocata, contrail-build-test-containers]
     experimental-sanity:
       jobs:
-        - contrail-sanity-centos7-kolla-ocata:
-            vars:
-              contrail_version: '{{ packaging.version.public }}-latest'
-              contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port }}'
-              setup_docker_registry: false
-        - contrail-sanity-centos7-kolla-queens:
-            vars:
-              contrail_version: '{{ packaging.version.public }}-latest'
-              contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port }}'
-              setup_docker_registry: false
-        - contrail-sanity-centos7-kolla-queens-multinode:
-            vars:
-              contrail_version: '{{ packaging.version.public }}-latest'
-              contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port }}'
-              setup_docker_registry: false
-        - contrail-sanity-centos7-k8s:
-            vars:
-              contrail_version: '{{ packaging.version.public }}-latest'
-              contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port }}'
-              setup_docker_registry: false
-
-- project-template:
+      - contrail-sanity-ubuntu1604-helm-ocata:
+          vars:
+            container_tag: '{{ openstack_version }}-{{ packaging.version.public }}-latest'
+            contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port
+              }}'
+            contrail_registry: {fqdn: '{{ docker_registry.fqdn }}', port: '{{ docker_registry.port
+                }}'}
+            contrail_version: '{{ packaging.version.public }}-latest'
+            setup_docker_registry: false
+    gate:
+      jobs: [noop]
+      queue: contrail-vnc
     name: helm-systests
+- project-template:
     check:
       jobs:
-        - contrail-vnc-build-package-centos74
-        - contrail-build-containers-centos7-ocata:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-build-test-containers:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-sanity-ubuntu1604-helm-ocata:
-            dependencies:
-              - contrail-build-containers-centos7-ocata
-              - contrail-build-test-containers
-    gate:
-      queue: contrail-vnc
-      jobs:
-        - noop
+      - contrail-vnc-build-package-rhel7-queens
+      - contrail-build-containers-rhel7-queens:
+          dependencies: [contrail-vnc-build-package-rhel7-queens]
+      - contrail-build-test-containers:
+          dependencies: [contrail-vnc-build-package-rhel7-queens]
     experimental-sanity:
       jobs:
-        - contrail-sanity-ubuntu1604-helm-ocata:
-            vars:
-              contrail_version: '{{ packaging.version.public }}-latest'
-              container_tag: '{{ openstack_version }}-{{ packaging.version.public }}-latest'
-              contrail_registry:
-                fqdn: '{{ docker_registry.fqdn }}'
-                port: '{{ docker_registry.port }}'
-              contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port }}'
-              setup_docker_registry: false
-
-- project-template:
+      - contrail-sanity-rhel7-openshift-3.9:
+          vars: {contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port
+              }}', contrail_version: '{{ packaging.version.public }}-latest', setup_docker_registry: false}
+    gate:
+      jobs: [noop]
+      queue: contrail-vnc
     name: openshift-systests
-    check:
-      jobs:
-        - contrail-vnc-build-package-rhel7-queens
-        - contrail-build-containers-rhel7-queens:
-            dependencies:
-              - contrail-vnc-build-package-rhel7-queens
-        - contrail-build-test-containers:
-            dependencies:
-              - contrail-vnc-build-package-rhel7-queens
-    gate:
-      queue: contrail-vnc
-      jobs:
-        - noop
-    experimental-sanity:
-      jobs:
-        - contrail-sanity-rhel7-openshift-3.9:
-            vars:
-              contrail_version: '{{ packaging.version.public }}-latest'
-              contrail_docker_registry: '{{ docker_registry.fqdn }}:{{ docker_registry.port }}'
-              setup_docker_registry: false
-
 - project-template:
+    check:
+      jobs: [contrail-vnc-build-package-centos74]
+    gate:
+      jobs: [noop]
+      queue: contrail-vnc
     name: build
+- project-template:
     check:
       jobs:
-        - contrail-vnc-build-package-centos74
+      - contrail-vnc-build-package-centos74
+      - contrail-build-containers-centos7-ocata:
+          dependencies: [contrail-vnc-build-package-centos74]
     gate:
+      jobs: [noop]
       queue: contrail-vnc
-      jobs:
-        - noop
-
-- project-template:
     name: build-container
-    check:
-      jobs:
-        - contrail-vnc-build-package-centos74
-        - contrail-build-containers-centos7-ocata:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-    gate:
-      queue: contrail-vnc
-      jobs:
-        - noop
-
 - project-template:
+    check:
+      jobs: [noop]
+    gate:
+      jobs: [noop]
+      queue: contrail-vnc
     name: noops
-    check:
-      jobs:
-        - noop
-    gate:
-      queue: contrail-vnc
-      jobs:
-        - noop
-
 - project-template:
+    check:
+      jobs: [contrail-build-win2016]
+    gate:
+      jobs: [contrail-build-win2016]
     name: windows-sanity
-    check:
-      jobs:
-        - contrail-build-win2016
-    gate:
-      jobs:
-        - contrail-build-win2016
-
 - project-template:
+    check:
+      jobs: [contrail-alltests-win2016]
+    gate:
+      jobs: [noop]
     name: windows-all-tests
+- project:
     check:
       jobs:
-        - contrail-alltests-win2016
+      - contrail-vnc-specs-linter:
+          files: [specs/.*]
+    name: tungstenfabric-preview/analytics
+    templates: [unittests, systests]
+- project:
+    name: tungstenfabric-preview/common
+    templates: [unittests, systests, windows-sanity]
+- project:
+    name: tungstenfabric-tools-preview/build
+    templates: [unittests, systests, windows-sanity]
+- project:
+    check:
+      jobs:
+      - contrail-vnc-unittest-centos7-tntestr: {voting: false}
+    name: tungstenfabric-preview/controller
+    templates: [unittests, systests, windows-sanity]
+- project:
+    name: tungstenfabric-preview/generateDS
+    templates: [unittests, systests]
+- project:
+    check:
+      jobs: [contrail-vnc-build-package-rhel7-queens]
     gate:
-      jobs:
-        - noop
-
+      jobs: [contrail-vnc-build-package-rhel7-queens]
+    name: tungstenfabric-tools-preview/packages
+    templates: [systests]
 - project:
-    name: Juniper/contrail-analytics
-    templates:
-      - unittests
-      - systests
+    name: tungstenfabric-preview/sandesh
+    templates: [unittests, systests]
+- project:
     check:
-      jobs:
-        - contrail-vnc-specs-linter:
-           files:
-             - specs/.*
-
+      jobs: [contrail-vnc-specs-linter]
+    name: tungstenfabric-preview/specs
+    templates: [noops]
 - project:
-    name: Juniper/contrail-common
-    templates:
-      - unittests
-      - systests
-      - windows-sanity
-
+    name: tungstenfabric-preview/vrouter
+    templates: [unittests, systests, windows-sanity]
 - project:
-    name: Juniper/contrail-build
-    templates:
-      - unittests
-      - systests
-      - windows-sanity
-
+    name: tungstenfabric-tools-preview/third-party
+    templates: [unittests, systests, windows-sanity]
 - project:
-    name: Juniper/contrail-controller
-    templates:
-      - unittests
-      - systests
-      - windows-sanity
-    check:
-      jobs:
-        - contrail-vnc-unittest-centos7-tntestr:
-            voting: False
-
+    name: tungstenfabric-preview/neutron-plugin
+    templates: [systests]
 - project:
-    name: Juniper/contrail-generateDS
-    templates:
-      - unittests
-      - systests
-      # flake8
-
+    name: tungstenfabric-preview/nova-vif-driver
+    templates: [systests]
 - project:
-    name: Juniper/contrail-packages
-    templates:
-      - systests
-    check:
-      jobs:
-        - contrail-vnc-build-package-rhel7-queens
-    gate:
-      jobs:
-        - contrail-vnc-build-package-rhel7-queens
-
+    name: tungstenfabric-tools-preview/provisioning
+    templates: [systests]
 - project:
-    name: Juniper/contrail-sandesh
-    templates:
-      - unittests
-      - systests
-
-- project:
-    name: Juniper/contrail-specs
-    templates:
-      - noops
-    check:
-      jobs:
-        - contrail-vnc-specs-linter
-
-- project:
-    name: Juniper/contrail-vrouter
-    templates:
-      - unittests
-      - systests
-      - windows-sanity
-
-- project:
-    name: Juniper/contrail-third-party
-    templates:
-      - unittests
-      - systests
-      - windows-sanity
-
-- project:
-    name: Juniper/contrail-neutron-plugin
-    templates:
-      - systests
-      # flake8
-
-- project:
-    name: Juniper/contrail-nova-vif-driver
-    templates:
-      - systests
-      # flake8
-
-- project:
-    name: Juniper/contrail-provisioning
-    templates:
-      - systests
-
-- project:
-    name: Juniper/contrail-test
-    templates:
-      - systests
     experimental:
       jobs:
-        - contrail-vnc-build-package-centos74
-        - contrail-build-test-containers:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-
+      - contrail-vnc-build-package-centos74
+      - contrail-build-test-containers:
+          dependencies: [contrail-vnc-build-package-centos74]
+    name: tungstenfabric-preview/test
+    templates: [systests]
 - project:
-    name: Juniper/contrail-fabric-utils
-    templates:
-      - systests
-
+    name: tungstenfabric-tools-preview/fabric-utils
+    templates: [systests]
 - project:
-    name: Juniper/horizon
-    templates:
-      - systests
-
+    name: tungstenfabric-preview/openstack-horizon
+    templates: [systests]
 - project:
-    name: Juniper/nova
-    templates:
-      - systests
-
+    name: tungstenfabric-preview/openstack-nova
+    templates: [systests]
 - project:
-    name: Juniper/contrail-puppet
-    templates:
-      - systests
-
+    name: tungstenfabric-preview/openstack-heat
+    templates: [systests]
 - project:
-    name: Juniper/contrail-heat
-    templates:
-      - systests
-      # flake8
-
+    name: tungstenfabric-preview/vcenter-plugin
+    templates: [build-container]
 - project:
-    name: Juniper/contrail-vcenter-plugin
-    templates:
-      - build-container
-
+    name: tungstenfabric-tools-preview/ansible
+    templates: [systests]
 - project:
-    name: Juniper/contrail-docker
-    templates:
-      - systests
-      # validate-ansible
-
+    name: tungstenfabric-tools-preview/ansible-internal
+    templates: [systests]
 - project:
-    name: Juniper/contrail-ansible
-    templates:
-      - systests
-      # validate-ansible
-
-- project:
-    name: Juniper/contrail-ansible-internal
-    templates:
-      - systests
-      # validate-ansible
-      # ansible-unittests
-
-- project:
-    name: Juniper/contrail-community-docs
-    templates:
-      - noops
-
-- project:
-    name: Juniper/puppet-contrail
-    templates:
-      - noops
-
-- project:
-    name: Juniper/contrail-project-config
-    templates:
-      - noops
     check:
-      jobs:
-        - zuul-jobs-linters
+      jobs: [zuul-jobs-linters]
+    experimental:
+      jobs: [generate-build-change-info]
     gate:
+      jobs: [zuul-jobs-linters]
       queue: contrail-ci
+    name: tungstenfabric-infra-preview/project-config
+    templates: [noops]
+- project:
+    check:
       jobs:
-        - zuul-jobs-linters
+      - contrail-sanity-centos7-kolla-queens-multinode:
+          dependencies: [contrail-build-containers-centos7-queens, contrail-build-test-containers]
+      - contrail-windows-test-cad: {voting: false}
     experimental:
       jobs:
-        - generate-build-change-info
-
+      - contrail-vnc-build-package-centos74
+      - contrail-build-containers-centos7-ocata:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-build-test-containers:
+          dependencies: [contrail-vnc-build-package-centos74]
+      - contrail-sanity-centos7-kolla-ocata:
+          dependencies: [contrail-build-containers-centos7-ocata, contrail-build-test-containers]
+      - contrail-sanity-centos7-k8s:
+          dependencies: [contrail-build-containers-centos7-ocata, contrail-build-test-containers]
+    name: tungstenfabric-tools-preview/ansible-deployer
+    templates: [systests]
 - project:
-    name: Juniper/contrail-ansible-deployer
-    templates:
-      - systests
+    name: tungstenfabric-tools-preview/container-builder
+    templates: [systests]
+- project:
+    name: tungstenfabric-tools-preview/deployers-containers
+    templates: [systests]
+- project:
+    name: tungstenfabric-preview/web-core
+    templates: [unittests-webui, systests]
+- project:
     check:
       jobs:
-        - contrail-sanity-centos7-kolla-queens-multinode:
-            dependencies:
-              - contrail-build-containers-centos7-queens
-              - contrail-build-test-containers
-        - contrail-windows-test-cad:
-            voting: False
-    experimental:
-      jobs:
-        - contrail-vnc-build-package-centos74
-        - contrail-build-containers-centos7-ocata:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-build-test-containers:
-            dependencies:
-              - contrail-vnc-build-package-centos74
-        - contrail-sanity-centos7-kolla-ocata:
-            dependencies:
-              - contrail-build-containers-centos7-ocata
-              - contrail-build-test-containers
-        - contrail-sanity-centos7-k8s:
-            dependencies:
-              - contrail-build-containers-centos7-ocata
-              - contrail-build-test-containers
-
+      - contrail-vnc-specs-linter:
+          files: [specs/.*]
+    name: tungstenfabric-preview/web-controller
+    templates: [unittests-webui, systests]
 - project:
-    name: Juniper/contrail-container-builder
-    templates:
-      - systests
-
+    name: tungstenfabric-preview/webui-third-party
+    templates: [unittests-webui, systests]
 - project:
-    name: Juniper/contrail-deployers-containers
-    templates:
-      - systests
-
+    name: tungstenfabric-preview/web-server-manager
+    templates: [unittests-webui, systests]
 - project:
-    name: Juniper/contrail-web-core
-    templates:
-      - unittests-webui
-      - systests
-
+    name: tungstenfabric-preview/web-storage
+    templates: [unittests-webui, systests]
 - project:
-    name: Juniper/contrail-web-controller
-    templates:
-      - unittests-webui
-      - systests
+    name: tungstenfabric-tools-preview/third-party-cache
+    templates: [unittests-webui, systests]
+- project:
     check:
       jobs:
-        - contrail-vnc-specs-linter:
-           files:
-             - specs/.*
-
+      - contrail-sanity-centos7-kolla-queens-multinode:
+          dependencies: [contrail-build-containers-centos7-queens, contrail-build-test-containers]
+    name: tungstenfabric-tools-preview/kolla-ansible
+    templates: [systests]
 - project:
-    name: Juniper/contrail-webui-third-party
-    templates:
-      - unittests-webui
-      - systests
-
+    name: tungstenfabric-tools-preview/helm-deployer
+    templates: [helm-systests]
 - project:
-    name: Juniper/contrail-web-server-manager
-    templates:
-      - unittests-webui
-      - systests
-
+    name: tungstenfabric-preview/vnc
+    templates: [build]
 - project:
-    name: Juniper/contrail-web-storage
-    templates:
-      - unittests-webui
-      - systests
-
+    name: tungstenfabric-preview/api-client
+    templates: [unittests, systests, windows-sanity]
 - project:
-    name: Juniper/contrail-third-party-cache
-    templates:
-      - unittests-webui
-      - systests
-
+    name: tungstenfabric-preview/java-api
+    templates: [build-container]
 - project:
-    name: Juniper/contrail-server-manager
-    templates:
-      - noops
-
+    name: tungstenfabric-preview/vijava
+    templates: [noops]
 - project:
-    name: Juniper/contrail-kolla-ansible
-    templates:
-      - systests
+    name: tungstenfabric-tools-preview/openstack-helm
+    templates: [helm-systests]
+- project:
+    name: tungstenfabric-tools-preview/openstack-helm-infra
+    templates: [helm-systests]
+- project:
     check:
-      jobs:
-        - contrail-sanity-centos7-kolla-queens-multinode:
-            dependencies:
-              - contrail-build-containers-centos7-queens
-              - contrail-build-test-containers
-
-- project:
-    name: Juniper/contrail-helm-deployer
-    templates:
-      - helm-systests
-
-- project:
-    name: Juniper/contrail-vnc
-    templates:
-      - build
-
-- project:
-    name: Juniper/contrail-api-client
-    templates:
-      - unittests
-      - systests
-      - windows-sanity
-
-- project:
-    name: Juniper/contrail-java-api
-    templates:
-      - build-container
-
-- project:
-    name: Juniper/vijava
-    templates:
-      - noops
-
-- project:
-    name: Juniper/openstack-helm
-    templates:
-      - helm-systests
-
-- project:
-    name: Juniper/openstack-helm-infra
-    templates:
-      - helm-systests
-
-- project:
-    name: Juniper/contrail-dpdk
-    check:
-      jobs:
-        - contrail-vnc-build-package-centos74
+      jobs: [contrail-vnc-build-package-centos74]
     gate:
+      jobs: [contrail-vnc-build-package-centos74]
       queue: contrail-vnc
-      jobs:
-        - contrail-vnc-build-package-centos74
-
+    name: tungstenfabric-preview/dpdk
 - project:
-    name: Juniper/contrail-vrouter-java-api
-    templates:
-      - noops
-
+    name: tungstenfabric-preview/vrouter-java-api
+    templates: [noops]
+- project: {name: tungstenfabric-tools-preview/dev-env}
 - project:
-    name: Juniper/contrail-dev-env
-
+    name: tungstenfabric-preview/vro-plugin
+    templates: [noops]
 - project:
-    name: Juniper/contrail-vro-plugin
-    templates:
-      - noops
-
+    name: tungstenfabric-preview/docs
+    templates: [noops]
 - project:
-    name: Juniper/contrail-docs
-    templates:
-      - noops
-
-- project:
-    name: Juniper/contrail-third-party-packages
     check:
       jobs:
-        - build-third-party-rpms-centos7:
-            files:
-              - upstream/rpm/.*
+      - build-third-party-rpms-centos7:
+          files: [upstream/rpm/.*]
     gate:
       jobs:
-        - build-third-party-rpms-centos7:
-            files:
-              - upstream/rpm/.*
+      - build-third-party-rpms-centos7:
+          files: [upstream/rpm/.*]
+    name: tungstenfabric-tools-preview/third-party-packages
     post-merge:
-      jobs:
-        - publish-third-party-packages
-
+      jobs: [publish-third-party-packages]
 - project:
-    name: Juniper/openshift-ansible
-    templates:
-      - openshift-systests
-
+    name: tungstenfabric-tools-preview/openshift-ansible
+    templates: [openshift-systests]
 - project:
-    name: Juniper/contrail-windows-docker-driver
-    templates:
-      - windows-sanity
-
+    name: tungstenfabric-preview/windows-docker-driver
+    templates: [windows-sanity]
 - project:
-    name: Juniper/contrail-vcenter-manager
-    templates:
-      - build-container
-
+    name: tungstenfabric-preview/vcenter-manager
+    templates: [build-container]
 - project:
-    name: Juniper/contrail-windows
-    templates:
-      - windows-sanity
-
+    name: tungstenfabric-preview/windows
+    templates: [windows-sanity]
 - project:
-    name: Juniper/contrail-windows-test
-    templates:
-      - windows-all-tests
-
+    name: tungstenfabric-preview/windows-test
+    templates: [windows-all-tests]
 - project:
-    name: Juniper/contrail-windows-ci-infra
-    templates:
-      - noops
-
+    name: tungstenfabric-preview/windows-ci-infra
+    templates: [noops]
 - project:
     name: tungstenfabric/docs
-    templates:
-      - noops
-
+    templates: [noops]
 - project:
-    name: tungstenfabric/tungsten-test-runner
-    templates:
-      - noops
     check:
       jobs:
-        - contrail-vnc-unittest-centos7-tntestr:
-            voting: False
-
+      - contrail-vnc-unittest-centos7-tntestr: {voting: false}
+    name: tungstenfabric-preview/test-runner
+    templates: [noops]
 - project:
-    name: Juniper/contrail-tripleo-puppet
-    templates:
-      - noops
-
+    name: tungstenfabric-tools-preview/tripleo-puppet
+    templates: [noops]
 - project:
-    name: Juniper/contrail-tripleo-heat-templates
-    templates:
-      - noops
-
+    name: tungstenfabric-tools-preview/tripleo-heat-templates
+    templates: [noops]
 - project:
-    name: Juniper/contrail-go-api
-    templates:
-      - noops
-
+    name: tungstenfabric-preview/go-api
+    templates: [noops]
 - project:
-    name: Juniper/contrail-infra
-    templates:
-      - noops
-
-
+    name: tungstenfabric-infra-preview/system-config
+    templates: [noops]

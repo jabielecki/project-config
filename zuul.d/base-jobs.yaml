@@ -2,8 +2,8 @@
     name: contrail-vnc-unittest-statistics-base
     parent: contrail-vnc-base2
     required-projects:
-      - tungstenfabric/tungsten-test-runner
-      - tungsten-infra/ci-utils
+      - tungstenfabric-preview/test-runner
+      - tungstenfabric-infra-preview/ci-utils
     irrelevant-files:
       - specs/.*
     post-run: playbooks/contrail-vnc-unittest-statistics-base/post
