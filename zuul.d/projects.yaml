@@ -361,3 +361,6 @@
 - project:
     name: tungstenfabric-infra-preview/system-config
     templates: [noops]
+- project:
+    name: tungstenfabric/atom    # just to have any dummy project on gerrit
+    templates: [systests]
